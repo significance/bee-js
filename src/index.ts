@@ -7,6 +7,9 @@ import * as bytes from './modules/bytes'
 import * as pss from './modules/pss'
 import * as connectivity from './modules/debug/connectivity'
 import * as chunk from './modules/chunk'
+import * as hutils from './utils/hex'
+import * as butils from './utils/bytes'
+import { keccak256Hash } from './chunk/hash'
 import type {
   Tag,
   FileData,
@@ -31,6 +34,7 @@ import {
 } from './chunk/soc'
 import { bytesToHex } from './utils/hex'
 import { Signer } from './chunk/signer'
+import { makeDefaultSigner } from './chunk/signer'
 import { makeContentAddressedChunk } from './chunk/cac'
 import { uploadChunk } from './chunk/upload'
 
@@ -40,7 +44,12 @@ import { uploadChunk } from './chunk/upload'
  * @param url URL of a running Bee node
  */
 export class Bee {
-  constructor(readonly url: string) {}
+  constructor(readonly url: string) {
+    this.butils = butils; 
+    this.hutils = hutils; 
+    this.makeDefaultSigner = makeDefaultSigner;
+    this.keccak256Hash = keccak256Hash;
+  }
 
   /**
    * Upload data to a Bee node
@@ -404,4 +413,5 @@ export class BeeDebug {
     return nodeAddresses.pss_public_key
   }
 }
+
 export default Bee

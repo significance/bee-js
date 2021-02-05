@@ -46,10 +46,17 @@ export async function upload(
  *
  */
 export async function download(url: string, hash: string): Promise<Uint8Array> {
-  const response = await safeAxios<ArrayBuffer>({
+let response
+  // try {
+  response = await safeAxios<ArrayBuffer>({
     responseType: 'arraybuffer',
     url: `${url}${endpoint}/${hash}`,
   })
+//   } catch (e) {
+// console.log(e, e.status, e.status === 404)
+// throw
+// return false
+//   }
 
   return new Uint8Array(response.data)
 }
