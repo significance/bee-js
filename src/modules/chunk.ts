@@ -1,5 +1,5 @@
 import type { Readable } from 'stream'
-import type { BeeResponse, UploadOptions } from '../types'
+import type { BeeResponse, Reference, ReferenceResponse, UploadOptions } from '../types'
 import { prepareData } from '../utils/data'
 import { extractUploadHeaders } from '../utils/headers'
 import { safeAxios } from '../utils/safeAxios'
@@ -23,11 +23,11 @@ export async function upload(
   hash: string,
   data: Uint8Array,
   options?: UploadOptions,
-): Promise<BeeResponse> {
-  const response = await safeAxios<BeeResponse>({
+): Promise<ReferenceResponse> {
+  const response = await safeAxios<ReferenceResponse>({
     method: 'post',
-    url: `${url}${endpoint}/${hash}`,
-    data: await prepareData(data),
+    url: `${url}${endpoint}`,
+    data,
     headers: {
       'content-type': 'application/octet-stream',
       ...extractUploadHeaders(options),

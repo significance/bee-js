@@ -1,7 +1,8 @@
-import { BeeResponse, UploadOptions } from '../types'
+import { ReferenceResponse, UploadOptions } from '../types'
 import { bytesToHex } from '../utils/hex'
-import { Chunk } from './cac'
-import * as chunkAPI from '../modules/chunk'
+import * as socAPI from '../modules/soc'
+import { SingleOwnerChunk } from './soc'
+import { serializeBytes } from './serialize'
 
 /**
  * Helper function to upload a chunk.
@@ -12,9 +13,15 @@ import * as chunkAPI from '../modules/chunk'
  * @param chunk     A chunk object
  * @param options   Upload options
  */
-export function uploadChunk(url: string, chunk: Chunk, options?: UploadOptions): Promise<BeeResponse> {
-  const address = chunk.address()
-  const hash = bytesToHex(address)
+export function uploadSingleOwnerChunk(
+  url: string,
+  chunk: SingleOwnerChunk,
+  options?: UploadOptions,
+): Promise<ReferenceResponse> {
+  const owner = bytesToHex(chunk.owner())
+  const identifier = bytesToHex(chunk.identifier())
+  const signature = bytesToHex(chunk.signature())
+  const data = serializeBytes(chunk.span(), chunk.payload())
 
-  return chunkAPI.upload(url, hash, chunk.data, options)
+  return socAPI.upload(url, owner, identifier, signature, data, options)
 }
