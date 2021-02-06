@@ -14,7 +14,6 @@ export async function safeAxios<T>(config: AxiosRequestConfig): Promise<AxiosRes
 
     return response
   } catch (e) {
-    console.log("e",e.code == "ECONNABORTED")
     if (e.code === "ECONNABORTED"){
       throw new BeeResponseError(404, "could not find")
     }
