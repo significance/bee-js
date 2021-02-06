@@ -6,9 +6,16 @@ import * as pinning from './modules/pinning'
 import * as bytes from './modules/bytes'
 import * as pss from './modules/pss'
 import * as connectivity from './modules/debug/connectivity'
+
 import * as balance from './modules/debug/balance'
 import * as chequebook from './modules/debug/chequebook'
 import * as settlements from './modules/debug/settlements'
+
+import * as chunk from './modules/chunk'
+import * as hutils from './utils/hex'
+import * as butils from './utils/bytes'
+import { keccak256Hash } from './chunk/hash'
+
 import type {
   Tag,
   FileData,
@@ -22,8 +29,25 @@ import type {
   BeeResponse,
 } from './types'
 import { BeeError } from './utils/error'
+// <<<<<<< HEAD
 import { prepareWebsocketData } from './utils/data'
 import { fileArrayBuffer, isFile } from './utils/file'
+// =======
+// import { EthAddress } from './chunk/signer'
+import {
+  Identifier,
+  makeSingleOwnerChunk,
+  makeSOCAddress,
+  SOCReader,
+  SOCWriter,
+  verifySingleOwnerChunk,
+} from './chunk/soc'
+import { bytesToHex } from './utils/hex'
+// import { Signer } from './chunk/signer'
+import { makeDefaultSigner } from './chunk/signer'
+import { makeContentAddressedChunk } from './chunk/cac'
+import { uploadSingleOwnerChunk as uploadChunk } from './chunk/upload'
+// >>>>>>> a28c0a02e2b85d36896803b831c7bd26fe327d5b
 
 /**
  * The Bee class provides a way of interacting with the Bee APIs based on the provided url
@@ -31,7 +55,12 @@ import { fileArrayBuffer, isFile } from './utils/file'
  * @param url URL of a running Bee node
  */
 export class Bee {
-  constructor(readonly url: string) {}
+  constructor(readonly url: string) {
+    this.butils = butils; 
+    this.hutils = hutils; 
+    this.makeDefaultSigner = makeDefaultSigner;
+    this.keccak256Hash = keccak256Hash;
+  }
 
   /**
    * Upload data to a Bee node
@@ -345,6 +374,43 @@ export class Bee {
       }
     })
   }
+
+  /**
+   * Returns an object for reading single owner chunks
+   *
+   * @param ownerAddress The ethereum address of the owner
+   */
+  makeSOCReader(ownerAddress: EthAddress): SOCReader {
+    const download = async (identifier: Identifier) => {
+      const address = makeSOCAddress(identifier, ownerAddress)
+      const data = await chunk.download(this.url, bytesToHex(address))
+
+      return verifySingleOwnerChunk(data, address)
+    }
+
+    return {
+      download,
+    }
+  }
+
+  /**
+   * Returns an object for reading and writing single owner chunks
+   *
+   * @param signer  The object for signing chunks
+   */
+  makeSOCWriter(signer: Signer): SOCWriter {
+    const upload = async (identifier: Identifier, data: Uint8Array, options?: UploadOptions) => {
+      const cac = makeContentAddressedChunk(data)
+      const soc = await makeSingleOwnerChunk(cac, identifier, signer)
+
+      return uploadChunk(this.url, soc, options)
+    }
+
+    return {
+      ...this.makeSOCReader(signer.address),
+      upload,
+    }
+  }
 }
 
 /**
@@ -493,4 +559,5 @@ export class BeeDebug {
     return settlements.getAllSettlements(this.url)
   }
 }
+
 export default Bee

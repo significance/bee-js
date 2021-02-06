@@ -2,6 +2,7 @@ import { ec, curve } from 'elliptic'
 import { BeeError } from '../utils/error'
 import type { Bytes } from '../utils/bytes'
 import { keccak256Hash } from './hash'
+import { TextEncoder, TextDecoder } from 'util'
 
 /**
  * Ethereum compatible signing and recovery

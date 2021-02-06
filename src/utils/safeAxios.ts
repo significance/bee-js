@@ -8,11 +8,15 @@ export async function safeAxios<T>(config: AxiosRequestConfig): Promise<AxiosRes
     const response = await axios({
       maxContentLength: Infinity,
       maxBodyLength: Infinity,
+      timeout: 1000,
       ...config,
     })
 
     return response
   } catch (e) {
+    if (e.code === "ECONNABORTED"){
+      throw new BeeResponseError(404, "could not find")
+    }
     if (e.response) {
       throw new BeeResponseError(e.response.status, e.response.statusText)
     } else if (e.request) {

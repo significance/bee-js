@@ -5,7 +5,7 @@ import { keccak256Hash } from './hash'
 import { SPAN_SIZE } from './span'
 import { serializeBytes } from './serialize'
 import { BeeError } from '../utils/error'
-import { BrandedType } from '../types'
+import { BeeResponse, BrandedType, UploadOptions } from '../types'
 import { Chunk, ChunkAddress, MAX_PAYLOAD_SIZE, MIN_PAYLOAD_SIZE, verifyChunk } from './cac'
 
 const IDENTIFIER_SIZE = 32
@@ -141,4 +141,30 @@ export async function makeSingleOwnerChunk(
   const soc = makeSingleOwnerChunkFromData(data, address, signer.address)
 
   return soc
+}
+
+/**
+ * Interface for downloading single owner chunks
+ */
+export interface SOCReader {
+  /**
+   * Downloads a single owner chunk
+   *
+   * @param identifier  The identifier of the chunk
+   */
+  download: (identifier: Identifier) => Promise<SingleOwnerChunk>
+}
+
+/**
+ * Interface for downloading and uploading single owner chunks
+ */
+export interface SOCWriter extends SOCReader {
+  /**
+   * Uploads a single owner chunk
+   *
+   * @param identifier  The identifier of the chunk
+   * @param data        The chunk payload data
+   * @param options     Upload options
+   */
+  upload: (Identifier: Identifier, data: Uint8Array, options?: UploadOptions) => Promise<BeeResponse>
 }
